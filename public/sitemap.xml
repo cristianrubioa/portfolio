@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hand-authored: this site has a single route. Add a <url> entry here if more pages are added. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://portfolio.crubio.fyi/</loc>
+    <lastmod>2026-09-08</lastmod>
+  </url>
+</urlset>
