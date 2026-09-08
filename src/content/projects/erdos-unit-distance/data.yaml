@@ -1,0 +1,16 @@
+title: Erdős unit distance explorer
+description: >-
+  Compares Erdős's 1946 lattice construction against the 2025 OpenAI
+  construction that disproved his conjecture.
+tags:
+  - research
+date: 2026-05
+favicon: https://erdos.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://erdos.crubio.fyi/
+  - label: GitHub
+    url: https://github.com/cristianrubioa/erdos
+  - label: Blog post
+    url: https://blog.crubio.fyi/erdos-80-anos-de-una-pregunta-resuelta-por-una-ia/

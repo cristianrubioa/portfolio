@@ -1,0 +1,15 @@
+title: Celeste
+description: >-
+  A map of the night sky for any place and any moment.
+tags:
+  - astronomy
+date: 2026-05
+favicon: https://celeste.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://celeste.crubio.fyi/
+  - label: GitHub
+    url: https://github.com/cristianrubioa/celeste
+  - label: Blog post
+    url: https://blog.crubio.fyi/celeste-un-mapa-del-cielo-estrellado-para-cualquier-lugar-y-cualquier-momento/

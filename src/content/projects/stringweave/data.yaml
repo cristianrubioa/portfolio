@@ -1,0 +1,16 @@
+title: StringWeave
+description: >-
+  Convert any photo into string art — generate the pin sequence and simulate
+  the weaving pattern for physical or digital creation.
+tags:
+  - generative art
+date: 2026-06
+favicon: https://stringweave.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://stringweave.crubio.fyi/
+  - label: GitHub
+    url: https://github.com/cristianrubioa/stringweave
+  - label: Blog post
+    url: https://blog.crubio.fyi/stringweave-dibujar-una-foto-con-un-solo-hilo-continuo/

@@ -1,0 +1,12 @@
+title: Blog
+description: >-
+  Personal blog — write-ups on the projects in this catalog and whatever
+  else is worth documenting.
+tags:
+  - writing
+date: 2026-05
+favicon: https://blog.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://blog.crubio.fyi/

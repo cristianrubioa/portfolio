@@ -1,0 +1,12 @@
+# NEEDS REVIEW: placeholder description, no source text was provided for BookForge.
+title: BookForge
+description: >-
+  A tool for building and managing books/reading material.
+tags:
+  - tools
+date: 2026-06
+favicon: https://bookforge.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://bookforge.crubio.fyi/

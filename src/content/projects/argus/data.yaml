@@ -1,0 +1,14 @@
+# NEEDS REVIEW: placeholder description, no source text was provided for Argus.
+title: Argus
+description: >-
+  A local tool for keeping watch over things that matter.
+tags:
+  - tools
+date: 2026-08
+favicon: https://argus.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://argus.crubio.fyi/
+  - label: GitHub
+    url: https://github.com/cristianrubioa/argus

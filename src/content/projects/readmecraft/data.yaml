@@ -1,0 +1,16 @@
+title: ReadmeCraft
+description: >-
+  A GitHub profile README that keeps itself up to date — no manual edits,
+  no scheduled busywork.
+tags:
+  - tools
+date: 2026-04
+favicon: https://readmecraft.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://readmecraft.crubio.fyi/
+  - label: GitHub
+    url: https://github.com/cristianrubioa/readmecraft
+  - label: Blog post
+    url: https://blog.crubio.fyi/readmecraft-el-readme-de-perfil-que-se-actualiza-solo/

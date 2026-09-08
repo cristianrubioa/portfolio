@@ -1,0 +1,212 @@
+---
+import { Image } from 'astro:assets';
+import type { Project } from '../lib/projects';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const dateLabel = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  year: 'numeric',
+}).format(project.date);
+const initial = project.title.charAt(0).toUpperCase();
+---
+
+<article
+  class="card"
+  data-tags={project.tags.join(',')}
+>
+  <div class="thumb">
+    <Image src={project.thumbnail} alt={`${project.title} preview`} />
+  </div>
+  <div class="meta-row">
+    <span>No. {project.number}</span>
+    <span>{dateLabel}</span>
+  </div>
+  <div class="body">
+    <div class="title-row">
+      <span class="avatar">
+        <img
+          src={project.favicon}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          onerror="this.hidden=true; this.nextElementSibling.hidden=false"
+        />
+        <span class="avatar-fallback" hidden>{initial}</span>
+      </span>
+      <h3>{project.title}</h3>
+    </div>
+    <p>{project.description}</p>
+    <div class="tags">
+      {project.tags.map((tag) => <span class="tag">{tag}</span>)}
+    </div>
+    <div class="links">
+      {
+        project.links.map((link) => (
+          <a href={link.url}>
+            {link.label === 'Live demo' && (
+              <span class="live-dot" aria-hidden="true" />
+            )}
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</article>
+
+<style>
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .card:hover {
+    border-color: var(--border-strong);
+    transform: scale(1.015);
+    box-shadow: 0 8px 24px rgba(27, 36, 48, 0.12);
+  }
+  .card[hidden] {
+    display: none;
+  }
+  .thumb {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--ink);
+  }
+  .thumb :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .body {
+    padding: 10px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .avatar {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .avatar-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+  }
+  p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+  }
+  .tag {
+    align-self: flex-start;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent-dark);
+    border: 1px solid rgba(228, 85, 43, 0.35);
+    padding: 3px 8px;
+    border-radius: 20px;
+    background: rgba(228, 85, 43, 0.06);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 4px;
+  }
+  .links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: 1px;
+  }
+  .links a:hover,
+  .links a:focus-visible {
+    border-color: var(--ink);
+  }
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2fae5b;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live-dot {
+      animation: none;
+    }
+    .card {
+      transition: none;
+    }
+  }
+
+</style>

@@ -1,0 +1,70 @@
+---
+---
+
+<header>
+  <div class="brand">
+    <div class="brand-mark">CR</div>
+    <div class="brand-name">cristianrubioa</div>
+  </div>
+  <nav>
+    <a href="https://crubio.fyi">Home</a>
+    <a href="https://cvcraft.crubio.fyi">CV</a>
+    <a href="https://github.com/cristianrubioa">GitHub</a>
+  </nav>
+</header>
+
+<style>
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .brand-name {
+    font-size: 15px;
+    font-weight: 500;
+  }
+  nav {
+    display: flex;
+    gap: 22px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  nav a {
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+  nav a:hover,
+  nav a:focus-visible {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  @media (max-width: 760px) {
+    nav {
+      display: none;
+    }
+  }
+</style>

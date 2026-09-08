@@ -1,0 +1,157 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getProjects } from '../lib/projects';
+
+const projects = await getProjects();
+const tags = [...new Set(projects.flatMap((p) => p.tags))].sort();
+---
+
+<Layout title="Portfolio — crubio.fyi">
+  <section class="intro">
+    <h1>Built things, indexed.</h1>
+    <p>
+      A running catalog of engineering and visualization work. Pick a lens
+      below and explore.
+    </p>
+  </section>
+
+  <nav class="filters" id="filters">
+    <button class="chip active" data-tag="all">All</button>
+    {tags.map((tag) => <button class="chip" data-tag={tag}>{tag}</button>)}
+  </nav>
+
+  <main class="grid" id="grid">
+    {projects.map((project) => <ProjectCard project={project} />)}
+  </main>
+  <div id="sentinel"></div>
+</Layout>
+
+<style>
+  .intro {
+    padding: 64px 0 40px;
+    max-width: 640px;
+  }
+  h1 {
+    font-size: 44px;
+    line-height: 1.12;
+    font-weight: 600;
+    margin: 0 0 18px;
+    letter-spacing: -0.01em;
+  }
+  .intro p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 520px;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 0 36px;
+  }
+  .chip {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+  .chip:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .chip.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+  .chip:focus-visible {
+    outline: 2px solid var(--accent-dark);
+    outline-offset: 2px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    grid-auto-flow: dense;
+  }
+  #sentinel {
+    height: 1px;
+  }
+
+  @media (max-width: 1024px) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    h1 {
+      font-size: 32px;
+    }
+  }
+</style>
+
+<script>
+  const grid = document.getElementById('grid')!;
+  const sentinel = document.getElementById('sentinel')!;
+  const cards = Array.from(grid.querySelectorAll<HTMLElement>('.card'));
+  const chips = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.chip'),
+  );
+
+  const BATCH_SIZE = 9;
+  let activeTag = 'all';
+  let visibleCount = BATCH_SIZE;
+
+  function matchesTag(card: HTMLElement) {
+    if (activeTag === 'all') return true;
+    return (card.dataset.tags ?? '').split(',').includes(activeTag);
+  }
+
+  function render() {
+    const matching = cards.filter(matchesTag);
+    matching.forEach((card, i) => {
+      card.hidden = i >= visibleCount;
+    });
+    cards.filter((card) => !matchesTag(card)).forEach((card) => {
+      card.hidden = true;
+    });
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeTag = chip.dataset.tag ?? 'all';
+      visibleCount = BATCH_SIZE;
+      render();
+    });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries[0].isIntersecting) return;
+    const matching = cards.filter(matchesTag);
+    if (visibleCount >= matching.length) return;
+    visibleCount += BATCH_SIZE;
+    render();
+  });
+  observer.observe(sentinel);
+
+  render();
+</script>

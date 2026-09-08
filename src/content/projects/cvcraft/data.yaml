@@ -1,0 +1,12 @@
+title: CVCraft
+description: >-
+  A CV builder for putting together a clean, structured résumé without
+  fighting a document editor.
+tags:
+  - tools
+date: 2026-05
+favicon: https://cvcraft.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://cvcraft.crubio.fyi/
