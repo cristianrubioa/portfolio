@@ -3,12 +3,27 @@
 ## Purpose
 TBD - created by archiving change portfolio-dashboard. Update Purpose after archive.
 ## Requirements
-### Requirement: Header navigation has exactly three external links
-The site header SHALL contain exactly three navigation links: "Home" linking to `crubio.fyi`, "CV" linking to `cvcraft.crubio.fyi`, and "GitHub" linking to `github.com/cristianrubioa`. No "Publications" link SHALL be present in this iteration.
+### Requirement: Header navigation has exactly five external links
+The site header SHALL contain exactly five navigation links, in order: "Home" linking to `crubio.fyi`, "CV" linking to `cvcraft.crubio.fyi`, "GitHub" linking to `github.com/cristianrubioa`, "LinkedIn" linking to `linkedin.com/in/cristianrubioaguiar`, and "Blog" linking to `blog.crubio.fyi`. No "Publications" or "Ko-fi" link SHALL be present in this iteration.
 
 #### Scenario: Header links point to the correct destinations
 - **WHEN** the site header renders
-- **THEN** it contains exactly three links — Home → `crubio.fyi`, CV → `cvcraft.crubio.fyi`, GitHub → `github.com/cristianrubioa` — and no Publications link
+- **THEN** it contains exactly five links — Home → `crubio.fyi`, CV → `cvcraft.crubio.fyi`, GitHub → `github.com/cristianrubioa`, LinkedIn → `linkedin.com/in/cristianrubioaguiar`, Blog → `blog.crubio.fyi` — and no Publications or Ko-fi link
+
+### Requirement: Header is sticky and scroll-transparent
+The site header SHALL remain pinned to the top of the viewport as the page scrolls, rather than scrolling out of view with the rest of the page content. The header height SHALL equal two units of the graph-paper background grid (80px, given the 40px grid unit), and it SHALL render with no border. At the top of the page the header SHALL be fully transparent (no background fill). Once the page has scrolled past its top, the header SHALL apply a translucent, blurred background so its content stays legible over whatever scrolls beneath it.
+
+#### Scenario: Header stays visible while scrolling
+- **WHEN** a user scrolls down the page
+- **THEN** the header remains pinned to the top of the viewport instead of scrolling away
+
+#### Scenario: Header is transparent at the top of the page
+- **WHEN** the page is scrolled to its top (`scrollY` is 0)
+- **THEN** the header renders with no background fill and no border
+
+#### Scenario: Header gains a translucent blurred background once scrolled
+- **WHEN** the page has been scrolled down (`scrollY` > 0)
+- **THEN** the header renders with a translucent, blurred background
 
 ### Requirement: No footer is rendered
 The site SHALL NOT render a footer element anywhere on the page.

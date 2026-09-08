@@ -1,7 +1,7 @@
 ---
 ---
 
-<header>
+<header id="site-header">
   <div class="brand">
     <div class="brand-mark">CR</div>
     <div class="brand-name">cristianrubioa</div>
@@ -10,16 +10,29 @@
     <a href="https://crubio.fyi">Home</a>
     <a href="https://cvcraft.crubio.fyi">CV</a>
     <a href="https://github.com/cristianrubioa">GitHub</a>
+    <a href="https://www.linkedin.com/in/cristianrubioaguiar/">LinkedIn</a>
+    <a href="https://blog.crubio.fyi">Blog</a>
   </nav>
 </header>
 
 <style>
   header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 28px 0;
-    border-bottom: 1px solid var(--border);
+    height: 80px;
+    background-color: transparent;
+    transition:
+      background-color 0.25s ease,
+      backdrop-filter 0.25s ease;
+  }
+  header.scrolled {
+    background-color: rgba(243, 244, 239, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
   .brand {
     display: flex;
@@ -68,3 +81,10 @@
     }
   }
 </style>
+
+<script>
+  const header = document.getElementById('site-header')!;
+  const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 0);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+</script>
