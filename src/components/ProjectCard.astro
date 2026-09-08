@@ -38,7 +38,7 @@ const initial = project.title.charAt(0).toUpperCase();
         />
         <span class="avatar-fallback" hidden>{initial}</span>
       </span>
-      <h3>{project.title}</h3>
+      <h2>{project.title}</h2>
     </div>
     <p>{project.description}</p>
     <div class="tags">
@@ -99,7 +99,7 @@ const initial = project.title.charAt(0).toUpperCase();
     padding: 12px 16px 0;
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px;
-    color: var(--ink-faint);
+    color: var(--ink-soft);
   }
   .body {
     padding: 10px 16px 16px;
@@ -140,7 +140,7 @@ const initial = project.title.charAt(0).toUpperCase();
   .avatar-fallback:not([hidden]) {
     display: flex;
   }
-  h3 {
+  h2 {
     font-size: 17px;
     font-weight: 600;
     margin: 0;
