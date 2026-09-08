@@ -50,6 +50,17 @@ The shared page container SHALL NOT apply a fixed `max-width` that centers conte
 - **WHEN** the page renders at any viewport width
 - **THEN** content does not touch the viewport edges — a small fixed padding remains on both sides
 
+### Requirement: External links open in a new tab
+Every outbound link rendered by the site — header navigation links and project card links (Live demo, GitHub, Blog post) alike — SHALL open in a new browser tab, leaving the portfolio page open in its own tab, rather than navigating away from it.
+
+#### Scenario: Header link opens in a new tab
+- **WHEN** a user clicks any header navigation link
+- **THEN** the destination opens in a new tab and the portfolio page remains open
+
+#### Scenario: Project card link opens in a new tab
+- **WHEN** a user clicks a Live demo, GitHub, or Blog post link on a project card
+- **THEN** the destination opens in a new tab and the portfolio page remains open
+
 ### Requirement: All catalog copy is authored in English
 All user-facing text rendered by the site — navigation labels, card copy, filter labels — SHALL be in English, regardless of the language used to author or discuss the content.
 

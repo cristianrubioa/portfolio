@@ -40,6 +40,13 @@ Each card SHALL display: the derived project number, title, short description, t
 - **WHEN** a project entry has title, description, tags, and date populated
 - **THEN** the rendered card shows the project number, title, description, all tags, and the date formatted as month + year
 
+### Requirement: Description is capped at two lines
+Each card's description text SHALL be authored to read as two lines at the card's default width, and SHALL be visually capped at two lines (overflow truncated) regardless of authored length, so every card in the grid reaches the same description height.
+
+#### Scenario: A longer description is truncated at two lines
+- **WHEN** a project's description would wrap to more than two lines at the card's default width
+- **THEN** the rendered card shows only the first two lines, with the remainder hidden rather than pushing the card taller
+
 ### Requirement: Card displays up to three links with a live-status indicator
 Each card SHALL render up to 3 links from: Live demo, GitHub, Blog post. When a Live demo link is present, it SHALL be preceded by a blinking green dot indicating the demo is live. The blink animation SHALL respect the `prefers-reduced-motion` media feature by rendering a static (non-blinking) dot instead.
 
@@ -55,12 +62,12 @@ Each card SHALL render up to 3 links from: Live demo, GitHub, Blog post. When a 
 - **WHEN** a project entry provides only a Blog post link
 - **THEN** the card renders only that one link, with no empty placeholders for the missing Live demo/GitHub links
 
-### Requirement: Avatar renders as a circular icon, always visible
-Each card SHALL render the project's favicon as a circular avatar positioned next to the title. The avatar SHALL be visible at all times, not only on hover.
+### Requirement: Avatar renders as a rounded-square icon, always visible
+Each card SHALL render the project's favicon as a rounded-square avatar (not a circle) positioned next to the title, using `object-fit: contain` so the icon is never cropped. A circular mask SHALL NOT be used, since most favicons are square edge-to-edge and a circular crop cuts their corners. The avatar SHALL be visible at all times, not only on hover.
 
 #### Scenario: Avatar is visible without interaction
 - **WHEN** a card is rendered and not being hovered
-- **THEN** the circular favicon avatar is visible next to the title
+- **THEN** the rounded-square favicon avatar is visible next to the title, with no part of the icon cropped
 
 ### Requirement: Hover feedback uses scale/shadow, not blur
 On hover, a card SHALL apply a subtle scale-up and/or elevation shadow. Hover SHALL NOT apply any blur effect to the card or its contents.

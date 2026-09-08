@@ -5,7 +5,7 @@ description: >-
 tags:
   - writing
 date: 2026-05
-favicon: https://blog.crubio.fyi/favicon.svg
+favicon: https://blog.crubio.fyi/static/img/favicon.svg
 thumbnail: ./thumbnail.png
 links:
   - label: Live demo

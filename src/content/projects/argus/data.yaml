@@ -1,11 +1,11 @@
-# NEEDS REVIEW: placeholder description, no source text was provided for Argus.
 title: Argus
 description: >-
-  A local tool for keeping watch over things that matter.
+  USB device monitoring and control — every device that connects gets seen,
+  allowed, or blocked.
 tags:
   - tools
 date: 2026-08
-favicon: https://argus.crubio.fyi/favicon.svg
+favicon: https://argus.crubio.fyi/icon.svg
 thumbnail: ./thumbnail.png
 links:
   - label: Live demo
