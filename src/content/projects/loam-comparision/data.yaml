@@ -1,0 +1,13 @@
+title: LOaM-comparison
+description: >-
+  Benchmarks four LiDAR SLAM algorithms on the KITTI dataset, weighing
+  accuracy against compute cost.
+tags:
+  - research
+date: 2021-10
+thumbnail: ./thumbnail.png
+links:
+  - label: GitHub
+    url: https://github.com/HaroldMurcia/LOaM-comparison
+  - label: Paper
+    url: https://ieeexplore.ieee.org/document/9633299

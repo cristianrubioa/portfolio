@@ -29,14 +29,18 @@ const initial = project.title.charAt(0).toUpperCase();
   <div class="body">
     <div class="title-row">
       <span class="avatar">
-        <img
-          src={project.favicon}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          onerror="this.hidden=true; this.nextElementSibling.hidden=false"
-        />
-        <span class="avatar-fallback" hidden>{initial}</span>
+        {
+          project.favicon && (
+            <img
+              src={project.favicon}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              onerror="this.hidden=true; this.nextElementSibling.hidden=false"
+            />
+          )
+        }
+        <span class="avatar-fallback" hidden={!!project.favicon}>{initial}</span>
       </span>
       <h2>{project.title}</h2>
     </div>
@@ -134,8 +138,9 @@ const initial = project.title.charAt(0).toUpperCase();
     align-items: center;
     justify-content: center;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
   }
   .avatar-fallback:not([hidden]) {
     display: flex;

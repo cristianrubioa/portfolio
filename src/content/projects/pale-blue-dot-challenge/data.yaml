@@ -1,0 +1,11 @@
+title: Pale Blue Dot
+description: >-
+  For NASA's Pale Blue Dot challenge — tracks glacier warming and snow loss
+  in Argentina via satellite imagery.
+tags:
+  - research
+date: 2024-01
+thumbnail: ./thumbnail.png
+links:
+  - label: GitHub
+    url: https://github.com/cristianrubioa/pale-blue-dot-challenge

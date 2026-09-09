@@ -1,0 +1,13 @@
+title: Ubidots CLI
+description: >-
+  A CLI for the Ubidots IoT platform — manage devices and variables, and
+  build serverless functions locally with Docker.
+tags:
+  - tools
+date: 2024-11
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://pypi.org/project/ubidots-cli/
+  - label: GitHub
+    url: https://github.com/ubidots/ubidots-cli

@@ -1,0 +1,13 @@
+title: COVID-19 Colombia Information Dashboard
+description: >-
+  Turns Colombia's national COVID-19 case data into trend curves, geospatial
+  maps, and outbreak projections.
+tags:
+  - research
+date: 2020-07
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://www.mathworks.com/matlabcentral/fileexchange/77816-boletin-de-informacion-covid-19-colombia
+  - label: GitHub
+    url: https://github.com/cristianrubioa/covid-19-colombia-app-matlab

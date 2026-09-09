@@ -13,12 +13,12 @@ const projects = defineCollection({
       description: z.string(),
       tags: z.array(z.string()).min(1),
       date: z.coerce.date(),
-      favicon: z.string().url(),
+      favicon: z.string().url().optional(),
       thumbnail: image(),
       links: z
         .array(
           z.object({
-            label: z.enum(['Live demo', 'GitHub', 'Blog post']),
+            label: z.enum(['Live demo', 'GitHub', 'Blog post', 'Paper']),
             url: z.string().url(),
           }),
         )
