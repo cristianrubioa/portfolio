@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# editor and tooling config, not project source
+.vscode/
+openspec/
+.claude/
