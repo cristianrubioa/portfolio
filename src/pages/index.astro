@@ -115,7 +115,7 @@ const tags = [...new Set(projects.flatMap((p) => p.tags))].sort();
     document.querySelectorAll<HTMLButtonElement>('.chip'),
   );
 
-  const BATCH_SIZE = 9;
+  const BATCH_SIZE = 8;
   let activeTag = 'all';
   let visibleCount = BATCH_SIZE;
 
