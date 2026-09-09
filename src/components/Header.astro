@@ -6,7 +6,18 @@
     <div class="brand-mark">CR</div>
     <div class="brand-name">cristianrubioa</div>
   </div>
-  <nav>
+  <button
+    id="nav-toggle"
+    type="button"
+    class="nav-toggle"
+    aria-label="Toggle menu"
+    aria-expanded="false"
+    aria-controls="site-nav"
+  >
+    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+  </button>
+  <nav id="site-nav">
     <a href="https://crubio.fyi" target="_blank" rel="noopener noreferrer">Home</a>
     <a href="https://cv.crubio.fyi" target="_blank" rel="noopener noreferrer">CV</a>
     <a href="https://github.com/cristianrubioa" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -75,9 +86,57 @@
     border-color: var(--ink);
   }
 
+  .nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    background: none;
+    color: var(--ink);
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .nav-toggle .fa-xmark {
+    display: none;
+  }
+  #site-header.nav-open .nav-toggle .fa-bars {
+    display: none;
+  }
+  #site-header.nav-open .nav-toggle .fa-xmark {
+    display: block;
+  }
+
   @media (max-width: 760px) {
+    .nav-toggle {
+      display: flex;
+    }
     nav {
       display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      padding: 12px 28px 20px;
+      background-color: rgba(243, 244, 239, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #site-header.nav-open nav {
+      display: flex;
+    }
+    nav a {
+      padding: 10px 0;
+      color: var(--ink);
+    }
+    nav a:hover,
+    nav a:focus-visible {
+      color: var(--accent);
+      border-color: var(--accent);
     }
   }
 </style>
@@ -87,4 +146,25 @@
   const onScroll = () => header.classList.toggle('scrolled', window.scrollY > 0);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  const navToggle = document.getElementById('nav-toggle')!;
+  const nav = document.getElementById('site-nav')!;
+
+  const closeNav = () => {
+    header.classList.remove('nav-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  };
+
+  navToggle.addEventListener('click', () => {
+    const isOpen = header.classList.toggle('nav-open');
+    navToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  nav.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).tagName === 'A') closeNav();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeNav();
+  });
 </script>
