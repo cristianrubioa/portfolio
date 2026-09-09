@@ -1,0 +1,13 @@
+title: Claudebar
+description: >-
+  A Linux tray app that shows your Claude usage limits at a glance, without
+  leaving what you're doing.
+tags:
+  - tools
+date: 2026-06
+thumbnail: ./thumbnail.png
+links:
+  - label: GitHub
+    url: https://github.com/cristianrubioa/claudebar
+  - label: Blog post
+    url: https://blog.crubio.fyi/claudebar-cuanto-de-claude-te-queda-sin-salir-de-lo-que-estas-haciendo/

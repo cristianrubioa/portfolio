@@ -1,0 +1,13 @@
+title: RoomViz
+description: >-
+  My bedroom modeled in Sweet Home 3D, rendered in Blender, and wired to
+  real Home Assistant devices.
+tags:
+  - home automation
+date: 2026-04
+thumbnail: ./thumbnail.png
+links:
+  - label: GitHub
+    url: https://github.com/cristianrubioa/roomviz
+  - label: Blog post
+    url: https://blog.crubio.fyi/roomviz-mi-cuarto-en-blender-que-se-enciende-con-home-assistant/

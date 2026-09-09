@@ -1,0 +1,16 @@
+title: FakeAPI
+description: >-
+  A mutable REST API sandbox for testing and prototyping — real CRUD,
+  isolated per workspace, no auth required.
+tags:
+  - tools
+date: 2025-02
+favicon: https://fakeapi.crubio.fyi/favicon.svg
+thumbnail: ./thumbnail.png
+links:
+  - label: Live demo
+    url: https://fakeapi.crubio.fyi/
+  - label: GitHub
+    url: https://github.com/cristianrubioa/fakeapi
+  - label: Blog post
+    url: https://blog.crubio.fyi/fakeapi-un-sandbox-rest-mutable-y-aislado-para-probar-y-prototipar/

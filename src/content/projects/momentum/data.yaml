@@ -1,0 +1,13 @@
+title: Momentum
+description: >-
+  A Home Assistant integration that saves the exact star map for a date and
+  place, next to an elapsed-time counter.
+tags:
+  - home automation
+date: 2026-06
+thumbnail: ./thumbnail.png
+links:
+  - label: GitHub
+    url: https://github.com/cristianrubioa/momentum
+  - label: Blog post
+    url: https://blog.crubio.fyi/momentum-el-cielo-de-un-momento-siempre-en-el-dashboard/
