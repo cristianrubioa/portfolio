@@ -1,4 +1,10 @@
 ---
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+const onGraph = currentPath === '/graph';
 ---
 
 <header id="site-header">
@@ -18,11 +24,22 @@
     <i class="fa-solid fa-xmark" aria-hidden="true"></i>
   </button>
   <nav id="site-nav">
-    <a href="https://crubio.fyi" target="_blank" rel="noopener noreferrer">Home</a>
-    <a href="https://cv.crubio.fyi" target="_blank" rel="noopener noreferrer">CV</a>
-    <a href="https://github.com/cristianrubioa" target="_blank" rel="noopener noreferrer">GitHub</a>
-    <a href="https://www.linkedin.com/in/cristianrubioaguiar/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-    <a href="https://blog.crubio.fyi" target="_blank" rel="noopener noreferrer">Blog</a>
+    {onGraph ? <a href="/">Portfolio</a> : <a href="/graph">Graph</a>}
+    <a href="https://crubio.fyi" target="_blank" rel="noopener noreferrer">
+      Home<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+    </a>
+    <a href="https://cv.crubio.fyi" target="_blank" rel="noopener noreferrer">
+      CV<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+    </a>
+    <a href="https://github.com/cristianrubioa" target="_blank" rel="noopener noreferrer">
+      GitHub<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+    </a>
+    <a href="https://www.linkedin.com/in/cristianrubioaguiar/" target="_blank" rel="noopener noreferrer">
+      LinkedIn<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+    </a>
+    <a href="https://blog.crubio.fyi" target="_blank" rel="noopener noreferrer">
+      Blog<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+    </a>
   </nav>
 </header>
 
@@ -84,6 +101,11 @@
   nav a:focus-visible {
     color: var(--ink);
     border-color: var(--ink);
+  }
+  nav a i {
+    font-size: 9px;
+    margin-left: 5px;
+    opacity: 0.6;
   }
 
   .nav-toggle {

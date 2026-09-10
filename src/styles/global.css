@@ -11,6 +11,10 @@
   --card-bg: #ffffff;
   --border: rgba(27, 36, 48, 0.14);
   --border-strong: rgba(27, 36, 48, 0.3);
+  --cat-repo: var(--accent);
+  --cat-blog: #3d6b8c;
+  --cat-domain: #5f7d55;
+  --cat-paper: #8a6a9c;
 }
 
 *,

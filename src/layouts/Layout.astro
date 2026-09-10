@@ -25,7 +25,7 @@ const {
   </head>
   <body>
     <div class="wrap">
-      <Header />
+      <Header currentPath={Astro.url.pathname} />
       <slot />
     </div>
   </body>

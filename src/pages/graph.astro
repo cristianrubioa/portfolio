@@ -1,0 +1,342 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getProjects } from '../lib/projects';
+import { toGraphData, computeHubs } from '../lib/graph';
+
+const projects = await getProjects();
+const graphData = toGraphData(projects);
+const hubData = computeHubs(graphData.nodes);
+---
+
+<Layout
+  title="Graph — crubio.fyi"
+  description="An interactive graph of every project and its links."
+>
+  <div id="graph-wrap">
+    <div id="filter-dock">
+      <div id="dock-content">
+        <fieldset id="category-filters" hidden>
+          <label><input type="checkbox" value="repo" checked /> Repo</label>
+          <label><input type="checkbox" value="blog" checked /> Blog</label>
+          <label><input type="checkbox" value="domain" checked /> Domain</label>
+          <label><input type="checkbox" value="paper" checked /> Paper</label>
+        </fieldset>
+        <label class="group-toggle">
+          <input type="checkbox" id="group-toggle-input" />
+          Group by shared source
+        </label>
+      </div>
+      <button
+        id="dock-toggle-btn"
+        type="button"
+        aria-expanded="false"
+        aria-controls="dock-content"
+        aria-label="Toggle filter panel"
+      >
+        <i class="fa-solid fa-chevron-up" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div id="graph-container"></div>
+  </div>
+</Layout>
+
+<script type="application/json" id="graph-data" set:html={JSON.stringify(graphData)} />
+<script type="application/json" id="hub-data" set:html={JSON.stringify(hubData)} />
+
+<style>
+  #graph-wrap {
+    position: relative;
+  }
+  #graph-container {
+    width: 100%;
+    height: calc(100vh - 80px);
+    cursor: grab;
+  }
+  #filter-dock {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  #dock-content {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    box-shadow: 0 2px 10px rgba(27, 36, 48, 0.08);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  #dock-content.dock-open {
+    display: flex;
+  }
+  #dock-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--ink-soft);
+    box-shadow: 0 2px 10px rgba(27, 36, 48, 0.08);
+    cursor: pointer;
+  }
+  @media (min-width: 680px) {
+    #dock-content {
+      display: flex !important;
+    }
+    #dock-toggle-btn {
+      display: none;
+    }
+  }
+  .group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #category-filters {
+    display: flex;
+    gap: 10px;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  #category-filters[hidden] {
+    display: none;
+  }
+  #category-filters label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+</style>
+
+<script>
+  import ForceGraph, { type NodeObject } from 'force-graph';
+  import { forceCollide, forceManyBody } from 'd3-force-3d';
+  import type { GraphNode, GraphLink, LinkCategory } from '../lib/graph';
+
+  type Node = GraphNode & NodeObject;
+
+  const container = document.getElementById('graph-container')!;
+  const baseData = JSON.parse(
+    document.getElementById('graph-data')!.textContent!,
+  ) as { nodes: Node[]; links: GraphLink[] };
+  const hubData = JSON.parse(
+    document.getElementById('hub-data')!.textContent!,
+  ) as { nodes: Node[]; links: GraphLink[] };
+
+  const style = getComputedStyle(document.documentElement);
+  const ink = style.getPropertyValue('--ink').trim();
+  const inkSoft = style.getPropertyValue('--ink-soft').trim();
+  const paper = style.getPropertyValue('--card-bg').trim();
+  const border = style.getPropertyValue('--border-strong').trim();
+  const accent = style.getPropertyValue('--accent').trim();
+
+  const CATEGORY_COLOR: Record<LinkCategory, string> = {
+    repo: style.getPropertyValue('--cat-repo').trim(),
+    blog: style.getPropertyValue('--cat-blog').trim(),
+    domain: style.getPropertyValue('--cat-domain').trim(),
+    paper: style.getPropertyValue('--cat-paper').trim(),
+  };
+
+  const PROJECT_RADIUS = 14;
+  const SATELLITE_RADIUS = 10;
+  const HUB_RADIUS = 16;
+  const radiusFor = (n: Node) =>
+    n.kind === 'project'
+      ? PROJECT_RADIUS
+      : n.kind === 'hub'
+        ? HUB_RADIUS
+        : SATELLITE_RADIUS;
+
+  const LABEL_MARGIN = 14;
+  const collideRadiusFor = (n: Node) => radiusFor(n) + LABEL_MARGIN;
+
+  function drawLabel(ctx: CanvasRenderingContext2D, n: Node, radius: number, color: string) {
+    if (!n.label) return;
+    ctx.font = '600 11px "Space Grotesk", sans-serif';
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(n.label, n.x!, n.y! + radius + 3);
+  }
+
+  const graph = new ForceGraph(container)
+    .graphData(baseData)
+    .backgroundColor('rgba(0,0,0,0)')
+    .nodeId('id')
+    .nodeLabel(() => '')
+    .linkColor((link) => {
+      const target = (link as GraphLink).target;
+      const category =
+        typeof target === 'object' && target !== null ? (target as Node).category : undefined;
+      return category ? CATEGORY_COLOR[category] : border;
+    })
+    .autoPauseRedraw(false)
+    .nodeCanvasObject((node, ctx) => {
+      const n = node as Node;
+      const radius = radiusFor(n);
+
+      if (n.kind === 'project') {
+        ctx.beginPath();
+        ctx.arc(n.x!, n.y!, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = paper;
+        ctx.fill();
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        if (n.icon) {
+          ctx.font = `900 ${radius * 1.2}px "Font Awesome 6 Free"`;
+          ctx.fillStyle = ink;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(n.icon, n.x!, n.y! + 0.5);
+        }
+        drawLabel(ctx, n, radius, inkSoft);
+      } else if (n.kind === 'hub') {
+        ctx.beginPath();
+        ctx.arc(n.x!, n.y!, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = accent;
+        ctx.fill();
+        if (n.icon) {
+          ctx.font = `900 ${radius * 1.2}px "Font Awesome 6 Free"`;
+          ctx.fillStyle = paper;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(n.icon, n.x!, n.y! + 0.5);
+        }
+        drawLabel(ctx, n, radius, inkSoft);
+      } else {
+        ctx.beginPath();
+        ctx.arc(n.x!, n.y!, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = paper;
+        ctx.fill();
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        if (n.icon) {
+          ctx.font = `900 ${radius * 1.4}px "Font Awesome 6 Free"`;
+          ctx.fillStyle = ink;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(n.icon, n.x!, n.y! + 0.5);
+        }
+      }
+    })
+    .nodePointerAreaPaint((node, color, ctx) => {
+      const n = node as Node;
+      const radius = radiusFor(n);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(n.x!, n.y!, radius, 0, 2 * Math.PI);
+      ctx.fill();
+    })
+    .onNodeHover((node) => {
+      container.style.cursor = node
+        ? (node as Node).kind === 'satellite'
+          ? 'pointer'
+          : 'grab'
+        : 'grab';
+    })
+    .onNodeClick((node) => {
+      const n = node as Node;
+      if (n.kind === 'satellite' && n.url) {
+        window.open(n.url, '_blank', 'noopener,noreferrer');
+      }
+    });
+
+  graph.d3Force('collide', forceCollide<Node>(collideRadiusFor));
+  graph.d3Force('charge', forceManyBody().distanceMax(260));
+
+  const idOf = (endpoint: unknown): string =>
+    typeof endpoint === 'object' && endpoint !== null
+      ? String((endpoint as Node).id)
+      : String(endpoint);
+
+  const dockToggleBtn = document.getElementById('dock-toggle-btn') as HTMLButtonElement;
+  const dockContent = document.getElementById('dock-content') as HTMLDivElement;
+  const dockIcon = dockToggleBtn.querySelector('i')!;
+
+  dockToggleBtn.addEventListener('click', () => {
+    const open = dockContent.classList.toggle('dock-open');
+    dockToggleBtn.setAttribute('aria-expanded', String(open));
+    dockIcon.className = open ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+  });
+
+  const groupToggle = document.getElementById('group-toggle-input') as HTMLInputElement;
+  const categoryFilters = document.getElementById('category-filters') as HTMLFieldSetElement;
+  const categoryCheckboxes = Array.from(
+    categoryFilters.querySelectorAll('input[type="checkbox"]'),
+  ) as HTMLInputElement[];
+  const categoryVisible: Record<LinkCategory, boolean> = {
+    repo: true,
+    blog: true,
+    domain: true,
+    paper: true,
+  };
+
+  function recompute() {
+    const grouped = groupToggle.checked;
+    const nodes: Node[] = [];
+    const links: GraphLink[] = [];
+    const visibleSatelliteIds = new Set<string>();
+
+    for (const n of baseData.nodes) {
+      if (n.kind === 'satellite') {
+        const visible = !grouped || categoryVisible[n.category as LinkCategory];
+        if (!visible) continue;
+        visibleSatelliteIds.add(n.id);
+      }
+      nodes.push(n);
+    }
+    for (const l of baseData.links) {
+      if (visibleSatelliteIds.has(idOf(l.target))) links.push(l);
+    }
+
+    if (grouped) {
+      for (const hub of hubData.nodes) {
+        const hubLinks = hubData.links.filter(
+          (l) => idOf(l.source) === hub.id && visibleSatelliteIds.has(idOf(l.target)),
+        );
+        if (hubLinks.length < 2) continue;
+        nodes.push(hub);
+        links.push(...hubLinks);
+      }
+    }
+
+    graph.graphData({ nodes, links });
+  }
+
+  groupToggle.addEventListener('change', () => {
+    categoryFilters.hidden = !groupToggle.checked;
+    recompute();
+  });
+
+  for (const checkbox of categoryCheckboxes) {
+    checkbox.addEventListener('change', () => {
+      categoryVisible[checkbox.value as LinkCategory] = checkbox.checked;
+      recompute();
+    });
+  }
+
+  window.addEventListener('resize', () => {
+    graph.width(container.clientWidth).height(container.clientHeight);
+  });
+</script>
