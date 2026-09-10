@@ -16,10 +16,10 @@ const hubData = computeHubs(graphData.nodes);
     <div id="filter-dock">
       <div id="dock-content">
         <fieldset id="category-filters" hidden>
-          <label><input type="checkbox" value="repo" checked /> Repo</label>
-          <label><input type="checkbox" value="blog" checked /> Blog</label>
-          <label><input type="checkbox" value="domain" checked /> Domain</label>
-          <label><input type="checkbox" value="paper" checked /> Paper</label>
+          <label><input type="checkbox" value="repo" checked /> <i class="fa-solid fa-code-branch" aria-hidden="true"></i> Repo</label>
+          <label><input type="checkbox" value="blog" checked /> <i class="fa-solid fa-newspaper" aria-hidden="true"></i> Blog</label>
+          <label><input type="checkbox" value="domain" checked /> <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i> Domain</label>
+          <label><input type="checkbox" value="paper" checked /> <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Paper</label>
         </fieldset>
         <label class="group-toggle">
           <input type="checkbox" id="group-toggle-input" />
@@ -46,6 +46,9 @@ const hubData = computeHubs(graphData.nodes);
 <style>
   #graph-wrap {
     position: relative;
+    /* Break out of Layout's .wrap padding (28px sides, 96px bottom) so the
+       canvas is full-bleed instead of leaving unused side gutters. */
+    margin: 0 -28px -96px;
   }
   #graph-container {
     width: 100%;
@@ -84,8 +87,8 @@ const hubData = computeHubs(graphData.nodes);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 28px;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--card-bg);
@@ -179,6 +182,9 @@ const hubData = computeHubs(graphData.nodes);
   }
 
   const graph = new ForceGraph(container)
+    .width(container.clientWidth)
+    .height(container.clientHeight)
+    .cooldownTicks(100)
     .graphData(baseData)
     .backgroundColor('rgba(0,0,0,0)')
     .nodeId('id')
@@ -260,7 +266,8 @@ const hubData = computeHubs(graphData.nodes);
       if (n.kind === 'satellite' && n.url) {
         window.open(n.url, '_blank', 'noopener,noreferrer');
       }
-    });
+    })
+    .onEngineStop(() => graph.zoomToFit(400, 40));
 
   graph.d3Force('collide', forceCollide<Node>(collideRadiusFor));
   graph.d3Force('charge', forceManyBody().distanceMax(260));
@@ -336,7 +343,7 @@ const hubData = computeHubs(graphData.nodes);
     });
   }
 
-  window.addEventListener('resize', () => {
+  new ResizeObserver(() => {
     graph.width(container.clientWidth).height(container.clientHeight);
-  });
+  }).observe(container);
 </script>
