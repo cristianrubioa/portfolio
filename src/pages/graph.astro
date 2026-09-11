@@ -390,12 +390,24 @@ const hubData = computeHubs(graphData.nodes);
   graph.d3Force('collide', forceCollide<Node>(collideRadiusFor));
   graph.d3Force('charge', forceManyBody().distanceMax(260));
 
+  // A real (temporary, invisible) anchor click, rather than window.open() -
+  // some popup/ad blockers (Brave Shields in particular) specifically
+  // target window.open() as the classic popup vector, while a genuine
+  // anchor click is treated as ordinary navigation and isn't blocked.
+  function openInNewTab(url: string) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.click();
+  }
+
   // Satellite links are opened from a plain, synchronous 'click' listener
   // instead of onNodeClick above: force-graph dispatches onNodeClick inside
   // a requestAnimationFrame callback (see its source), which runs outside
-  // the browser's "trusted user gesture" window - window.open() called from
-  // there gets silently popup-blocked in most browsers. A native click
-  // handler runs synchronously within the real gesture, so it isn't.
+  // the browser's "trusted user gesture" window - opening a link from there
+  // gets silently popup-blocked in most browsers. A native click handler
+  // runs synchronously within the real gesture, so it isn't.
   let justDraggedNode = false;
   graph.onNodeDragEnd(() => {
     justDraggedNode = true;
@@ -414,7 +426,7 @@ const hubData = computeHubs(graphData.nodes);
       const r = hitRadiusFor(n);
       return dx * dx + dy * dy <= r * r;
     });
-    if (hit?.url) window.open(hit.url, '_blank', 'noopener,noreferrer');
+    if (hit?.url) openInNewTab(hit.url);
   });
 
   const idOf = (endpoint: unknown): string =>
