@@ -19,8 +19,8 @@ const hubData = computeHubs(graphData.nodes);
         <fieldset id="category-filters" hidden>
           <label><input type="checkbox" value="repo" checked /> <i class="fa-solid fa-code-branch" aria-hidden="true"></i> Repo</label>
           <label><input type="checkbox" value="blog" checked /> <i class="fa-solid fa-newspaper" aria-hidden="true"></i> Blog</label>
-          <label><input type="checkbox" value="domain" checked /> <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i> Domain</label>
-          <label><input type="checkbox" value="paper" checked /> <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Paper</label>
+          <label><input type="checkbox" value="domain" /> <i class="fa-solid fa-tower-broadcast" aria-hidden="true"></i> Domain</label>
+          <label><input type="checkbox" value="paper" /> <i class="fa-solid fa-file-lines" aria-hidden="true"></i> Paper</label>
         </fieldset>
         <label class="group-toggle">
           <input type="checkbox" id="group-toggle-input" />
@@ -38,6 +38,10 @@ const hubData = computeHubs(graphData.nodes);
       </button>
     </div>
     <div id="graph-container"></div>
+    <div id="node-panel" hidden>
+      <div id="node-panel-title"></div>
+      <div id="node-panel-lines"></div>
+    </div>
   </div>
 </Layout>
 
@@ -128,11 +132,48 @@ const hubData = computeHubs(graphData.nodes);
     cursor: pointer;
     user-select: none;
   }
+  #node-panel {
+    position: fixed;
+    z-index: 2;
+    max-width: 90vw;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    box-shadow: 0 2px 10px rgba(27, 36, 48, 0.08);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  #node-panel[hidden] {
+    display: none;
+  }
+  #node-panel-title {
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  #node-panel-lines div {
+    white-space: nowrap;
+  }
+  #node-panel-lines strong {
+    color: var(--ink);
+  }
+  .node-panel-link {
+    color: #3d6b8c;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .node-panel-link:hover,
+  .node-panel-link:focus-visible {
+    border-color: #3d6b8c;
+  }
 </style>
 
 <script>
   import ForceGraph, { type NodeObject } from 'force-graph';
   import { forceCollide, forceManyBody } from 'd3-force-3d';
+  import { nodeLabelFor, projectLinkLines } from '../lib/graph';
   import type { GraphNode, GraphLink, LinkCategory } from '../lib/graph';
 
   type Node = GraphNode & NodeObject;
@@ -144,6 +185,56 @@ const hubData = computeHubs(graphData.nodes);
   const hubData = JSON.parse(
     document.getElementById('hub-data')!.textContent!,
   ) as { nodes: Node[]; links: GraphLink[] };
+
+  const nodePanel = document.getElementById('node-panel') as HTMLDivElement;
+  const nodePanelTitle = document.getElementById('node-panel-title') as HTMLDivElement;
+  const nodePanelLines = document.getElementById('node-panel-lines') as HTMLDivElement;
+
+  function openNodePanel(node: Node) {
+    const lines = projectLinkLines(node);
+    if (!lines.length) return;
+    nodePanelTitle.textContent = node.label ?? '';
+    nodePanelLines.innerHTML = lines
+      .map(
+        ({ label, line, url }) =>
+          `<div><strong>${label}</strong>: <a class="node-panel-link" href="${url}" target="_blank" rel="noopener noreferrer">${line}</a></div>`,
+      )
+      .join('');
+    nodePanel.hidden = false;
+
+    // Anchor the panel just above the clicked node, like the hover tooltip -
+    // not a fixed spot on screen regardless of which node was clicked.
+    const containerRect = container.getBoundingClientRect();
+    const { x, y } = graph.graph2ScreenCoords(node.x!, node.y!);
+    const nodeScreenX = containerRect.left + x;
+    const nodeTopY = containerRect.top + y - radiusFor(node);
+
+    const margin = 10;
+    const panelRect = nodePanel.getBoundingClientRect();
+    let top = nodeTopY - panelRect.height - margin;
+    if (top < 0) top = containerRect.top + y + radiusFor(node) + margin; // no room above - show below instead
+    let left = nodeScreenX - panelRect.width / 2;
+    left = Math.max(margin, Math.min(left, window.innerWidth - panelRect.width - margin));
+
+    nodePanel.style.left = `${left}px`;
+    nodePanel.style.top = `${top}px`;
+  }
+
+  function closeNodePanel() {
+    nodePanel.hidden = true;
+  }
+
+  // Clicks on the canvas itself are handled by onNodeClick/onBackgroundClick
+  // below - this only closes the panel for clicks elsewhere on the page
+  // (header, dock, ...), so it can never race the same click that opened it.
+  document.addEventListener('click', (event) => {
+    if (nodePanel.hidden) return;
+    const target = event.target as globalThis.Node;
+    if (!nodePanel.contains(target) && !container.contains(target)) closeNodePanel();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeNodePanel();
+  });
 
   const style = getComputedStyle(document.documentElement);
   const ink = style.getPropertyValue('--ink').trim();
@@ -188,7 +279,7 @@ const hubData = computeHubs(graphData.nodes);
     .graphData(baseData)
     .backgroundColor('rgba(0,0,0,0)')
     .nodeId('id')
-    .nodeLabel(() => '')
+    .nodeLabel((node) => nodeLabelFor(node as Node))
     .linkColor((link) => {
       const target = (link as GraphLink).target;
       const category =
@@ -265,8 +356,11 @@ const hubData = computeHubs(graphData.nodes);
       const n = node as Node;
       if (n.kind === 'satellite' && n.url) {
         window.open(n.url, '_blank', 'noopener,noreferrer');
+      } else if (n.kind === 'project') {
+        openNodePanel(n);
       }
     })
+    .onBackgroundClick(() => closeNodePanel())
     .onEngineStop(() => graph.zoomToFit(400, 40));
 
   graph.d3Force('collide', forceCollide<Node>(collideRadiusFor));
@@ -292,12 +386,11 @@ const hubData = computeHubs(graphData.nodes);
   const categoryCheckboxes = Array.from(
     categoryFilters.querySelectorAll('input[type="checkbox"]'),
   ) as HTMLInputElement[];
-  const categoryVisible: Record<LinkCategory, boolean> = {
-    repo: true,
-    blog: true,
-    domain: true,
-    paper: true,
-  };
+  // Read from the checkboxes' own `checked` attribute instead of duplicating
+  // their default state here - a single source of truth for what's on by default.
+  const categoryVisible = Object.fromEntries(
+    categoryCheckboxes.map((cb) => [cb.value, cb.checked]),
+  ) as Record<LinkCategory, boolean>;
 
   function recompute() {
     const grouped = groupToggle.checked;

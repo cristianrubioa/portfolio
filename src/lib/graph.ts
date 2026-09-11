@@ -2,6 +2,13 @@ import type { Project } from './projects';
 
 export type LinkCategory = 'repo' | 'blog' | 'domain' | 'paper';
 
+type SatelliteLink = {
+  label: Project['links'][number]['label'];
+  url: string;
+  sourceKey: string;
+  category: LinkCategory;
+};
+
 export type GraphNode = {
   id: string;
   kind: 'project' | 'satellite' | 'hub';
@@ -10,6 +17,7 @@ export type GraphNode = {
   label?: string;
   sourceKey?: string;
   category?: LinkCategory;
+  links?: SatelliteLink[];
 };
 
 export type GraphLink = {
@@ -48,6 +56,16 @@ const HUB_LABEL: Record<string, string> = {
   'blog.crubio.fyi': 'Blog',
 };
 
+// Hub hover tooltips; a source key with no entry here shows no tooltip -
+// there's no sensible raw-key fallback for a description like there is for
+// HUB_LABEL.
+const HUB_DESCRIPTION: Record<string, string> = {
+  cristianrubioa: 'All GitHub repos by the same author',
+  'blog.crubio.fyi': 'Posts published on the blog',
+};
+
+const BLOG_LINK_MAX = 35;
+
 // GitHub links are grouped by repo owner ("same author"), not by bare
 // hostname ("hosted on GitHub", which says nothing) - see design.md.
 export function sourceKeyFor(link: Project['links'][number]): string {
@@ -59,28 +77,92 @@ export function sourceKeyFor(link: Project['links'][number]): string {
   return url.hostname;
 }
 
+function repoNameFromUrl(url: string): string | undefined {
+  return new URL(url).pathname.split('/').filter(Boolean)[1];
+}
+
+function stripLink(url: string): string {
+  return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+// Shared by a satellite's own tooltip and a project's aggregated tooltip -
+// one implementation guarantees they always agree, per design.md.
+function satelliteLine(n: Pick<SatelliteLink, 'url' | 'category' | 'sourceKey'>): string {
+  switch (n.category) {
+    case 'domain':
+      return n.sourceKey;
+    case 'repo':
+      return `@${n.sourceKey}/${repoNameFromUrl(n.url)}`;
+    case 'blog': {
+      const stripped = stripLink(n.url);
+      return stripped.length > BLOG_LINK_MAX ? `${stripped.slice(0, BLOG_LINK_MAX)}...` : stripped;
+    }
+    case 'paper':
+      return '';
+  }
+}
+
+// Structured version of a project's links, for a click-to-pin panel that
+// styles the label/value parts differently (nodeLabelFor's joined HTML
+// string doesn't distinguish them).
+export function projectLinkLines(
+  node: GraphNode,
+): { label: string; line: string; url: string }[] {
+  if (node.kind !== 'project' || !node.links) return [];
+  return node.links
+    .map((link) => ({ label: link.label, line: satelliteLine(link), url: link.url }))
+    .filter((l) => l.line);
+}
+
+export function nodeLabelFor(node: GraphNode): string {
+  if (node.kind === 'satellite') {
+    if (!node.url || !node.category || !node.sourceKey) return '';
+    return satelliteLine({ url: node.url, category: node.category, sourceKey: node.sourceKey });
+  }
+  if (node.kind === 'hub') {
+    return (node.sourceKey && HUB_DESCRIPTION[node.sourceKey]) || '';
+  }
+  if (node.kind === 'project' && node.links) {
+    return node.links
+      .map((link) => {
+        const line = satelliteLine(link);
+        return line ? `${link.label}: ${line}` : '';
+      })
+      .filter(Boolean)
+      .join('<br>');
+  }
+  return '';
+}
+
 export function toGraphData(projects: Project[]): GraphData {
   const nodes: GraphNode[] = [];
   const links: GraphLink[] = [];
 
   for (const project of projects) {
     const projectNodeId = `project:${project.id}`;
+    const projectLinks: SatelliteLink[] = project.links.map((link) => ({
+      label: link.label,
+      url: link.url,
+      sourceKey: sourceKeyFor(link),
+      category: LINK_CATEGORY[link.label],
+    }));
     nodes.push({
       id: projectNodeId,
       kind: 'project',
       icon: PROJECT_ICON,
       label: project.title,
+      links: projectLinks,
     });
 
-    project.links.forEach((link, index) => {
+    projectLinks.forEach((link, index) => {
       const satelliteId = `satellite:${project.id}:${index}`;
       nodes.push({
         id: satelliteId,
         kind: 'satellite',
         url: link.url,
         icon: LINK_ICON[link.label],
-        sourceKey: sourceKeyFor(link),
-        category: LINK_CATEGORY[link.label],
+        sourceKey: link.sourceKey,
+        category: link.category,
       });
       links.push({ source: projectNodeId, target: satelliteId });
     });
@@ -110,6 +192,7 @@ export function computeHubs(nodes: GraphNode[]): GraphData {
       kind: 'hub',
       icon: HUB_ICON,
       label: HUB_LABEL[sourceKey] ?? sourceKey,
+      sourceKey,
     });
     for (const satellite of satellites) {
       hubLinks.push({ source: hubId, target: satellite.id });
