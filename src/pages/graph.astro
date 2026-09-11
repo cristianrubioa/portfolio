@@ -132,6 +132,13 @@ const hubData = computeHubs(graphData.nodes);
     cursor: pointer;
     user-select: none;
   }
+  /* Suppresses the hover tooltip only while the mouse is over the node
+     whose panel is pinned open (its info is already in the panel) - other
+     nodes' tooltips are unaffected. float-tooltip keeps re-asserting an
+     inline display:inline on mousemove, so !important is required to win. */
+  #graph-container.hide-own-tooltip :global(.float-tooltip-kap) {
+    display: none !important;
+  }
   #node-panel {
     position: fixed;
     z-index: 2;
@@ -190,14 +197,21 @@ const hubData = computeHubs(graphData.nodes);
   const nodePanelTitle = document.getElementById('node-panel-title') as HTMLDivElement;
   const nodePanelLines = document.getElementById('node-panel-lines') as HTMLDivElement;
 
-  // While a node's panel is pinned open, its hover tooltip is suppressed
-  // (see the .nodeLabel() accessor below) so the two don't stack.
+  // The node whose panel is currently pinned open - its own hover tooltip
+  // stays suppressed (see onNodeHover below and the CSS class above) since
+  // its info already shows in the panel; every other node's hover is
+  // unaffected.
   let pinnedNodeId: string | null = null;
 
   function openNodePanel(node: Node) {
     const lines = projectLinkLines(node);
     if (!lines.length) return;
     pinnedNodeId = node.id;
+    // The user is necessarily still hovering this node right now (they just
+    // clicked it) - force-graph won't re-check that until the hover target
+    // changes, so apply the suppression class immediately rather than
+    // waiting for onNodeHover to catch up.
+    container.classList.add('hide-own-tooltip');
     nodePanelTitle.textContent = node.label ?? '';
     nodePanelLines.innerHTML = lines
       .map(
@@ -227,6 +241,7 @@ const hubData = computeHubs(graphData.nodes);
 
   function closeNodePanel() {
     pinnedNodeId = null;
+    container.classList.remove('hide-own-tooltip');
     nodePanel.hidden = true;
   }
 
@@ -292,10 +307,7 @@ const hubData = computeHubs(graphData.nodes);
     .graphData(baseData)
     .backgroundColor('rgba(0,0,0,0)')
     .nodeId('id')
-    .nodeLabel((node) => {
-      const n = node as Node;
-      return n.id === pinnedNodeId ? '' : nodeLabelFor(n);
-    })
+    .nodeLabel((node) => nodeLabelFor(node as Node))
     .linkColor((link) => {
       const target = (link as GraphLink).target;
       const category =
@@ -362,17 +374,13 @@ const hubData = computeHubs(graphData.nodes);
       ctx.fill();
     })
     .onNodeHover((node) => {
-      container.style.cursor = node
-        ? (node as Node).kind === 'satellite'
-          ? 'pointer'
-          : 'grab'
-        : 'grab';
+      const n = node as Node | null;
+      container.style.cursor = n ? (n.kind === 'satellite' ? 'pointer' : 'grab') : 'grab';
+      container.classList.toggle('hide-own-tooltip', !!n && n.id === pinnedNodeId);
     })
     .onNodeClick((node) => {
       const n = node as Node;
-      if (n.kind === 'satellite' && n.url) {
-        window.open(n.url, '_blank', 'noopener,noreferrer');
-      } else if (n.kind === 'project') {
+      if (n.kind === 'project') {
         openNodePanel(n);
       }
     })
@@ -381,6 +389,33 @@ const hubData = computeHubs(graphData.nodes);
 
   graph.d3Force('collide', forceCollide<Node>(collideRadiusFor));
   graph.d3Force('charge', forceManyBody().distanceMax(260));
+
+  // Satellite links are opened from a plain, synchronous 'click' listener
+  // instead of onNodeClick above: force-graph dispatches onNodeClick inside
+  // a requestAnimationFrame callback (see its source), which runs outside
+  // the browser's "trusted user gesture" window - window.open() called from
+  // there gets silently popup-blocked in most browsers. A native click
+  // handler runs synchronously within the real gesture, so it isn't.
+  let justDraggedNode = false;
+  graph.onNodeDragEnd(() => {
+    justDraggedNode = true;
+  });
+  container.addEventListener('click', (ev) => {
+    if (justDraggedNode) {
+      justDraggedNode = false; // drag-release also fires a native click; don't treat it as one
+      return;
+    }
+    const rect = container.getBoundingClientRect();
+    const { x: gx, y: gy } = graph.screen2GraphCoords(ev.clientX - rect.left, ev.clientY - rect.top);
+    const hit = (graph.graphData().nodes as Node[]).find((n) => {
+      if (n.kind !== 'satellite' || !n.url) return false;
+      const dx = n.x! - gx;
+      const dy = n.y! - gy;
+      const r = hitRadiusFor(n);
+      return dx * dx + dy * dy <= r * r;
+    });
+    if (hit?.url) window.open(hit.url, '_blank', 'noopener,noreferrer');
+  });
 
   const idOf = (endpoint: unknown): string =>
     typeof endpoint === 'object' && endpoint !== null
