@@ -5,11 +5,13 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  currentPath: string;
 }
 
 const {
   title,
   description = 'A running catalog of engineering and visualization work — projects built and indexed.',
+  currentPath,
 } = Astro.props;
 ---
 
@@ -25,7 +27,7 @@ const {
   </head>
   <body>
     <div class="wrap">
-      <Header currentPath={Astro.url.pathname} />
+      <Header currentPath={currentPath} />
       <slot />
     </div>
   </body>
