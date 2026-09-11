@@ -190,9 +190,14 @@ const hubData = computeHubs(graphData.nodes);
   const nodePanelTitle = document.getElementById('node-panel-title') as HTMLDivElement;
   const nodePanelLines = document.getElementById('node-panel-lines') as HTMLDivElement;
 
+  // While a node's panel is pinned open, its hover tooltip is suppressed
+  // (see the .nodeLabel() accessor below) so the two don't stack.
+  let pinnedNodeId: string | null = null;
+
   function openNodePanel(node: Node) {
     const lines = projectLinkLines(node);
     if (!lines.length) return;
+    pinnedNodeId = node.id;
     nodePanelTitle.textContent = node.label ?? '';
     nodePanelLines.innerHTML = lines
       .map(
@@ -221,6 +226,7 @@ const hubData = computeHubs(graphData.nodes);
   }
 
   function closeNodePanel() {
+    pinnedNodeId = null;
     nodePanel.hidden = true;
   }
 
@@ -263,6 +269,13 @@ const hubData = computeHubs(graphData.nodes);
   const LABEL_MARGIN = 14;
   const collideRadiusFor = (n: Node) => radiusFor(n) + LABEL_MARGIN;
 
+  // Click/hover hit area is padded beyond the visible circle - nodes are
+  // small (10-16px radius) and a click needs some forgiveness to land
+  // reliably; the extra margin stays well inside the collision spacing
+  // above, so it doesn't start overlapping neighboring nodes' hit areas.
+  const HIT_MARGIN = 5;
+  const hitRadiusFor = (n: Node) => radiusFor(n) + HIT_MARGIN;
+
   function drawLabel(ctx: CanvasRenderingContext2D, n: Node, radius: number, color: string) {
     if (!n.label) return;
     ctx.font = '600 11px "Space Grotesk", sans-serif';
@@ -279,7 +292,10 @@ const hubData = computeHubs(graphData.nodes);
     .graphData(baseData)
     .backgroundColor('rgba(0,0,0,0)')
     .nodeId('id')
-    .nodeLabel((node) => nodeLabelFor(node as Node))
+    .nodeLabel((node) => {
+      const n = node as Node;
+      return n.id === pinnedNodeId ? '' : nodeLabelFor(n);
+    })
     .linkColor((link) => {
       const target = (link as GraphLink).target;
       const category =
@@ -339,7 +355,7 @@ const hubData = computeHubs(graphData.nodes);
     })
     .nodePointerAreaPaint((node, color, ctx) => {
       const n = node as Node;
-      const radius = radiusFor(n);
+      const radius = hitRadiusFor(n);
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(n.x!, n.y!, radius, 0, 2 * Math.PI);
